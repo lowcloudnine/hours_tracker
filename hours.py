@@ -12,40 +12,33 @@ from pathlib import Path
 from typing import Any
 
 import typer
+import pandas as pd
 from pydantic import BaseModel
 from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
 
 app = typer.Typer()
 
 
-class HourEntry(BaseModel):
-    """Class for tracking an entry of hours."""
+def read_csv(location: str) -> pd.DataFrame:
+    """Convert a CSV or directory of CSVs to a Pandas DataFrame"""
+    loc = Path(location)
+    csv_files = []
+    if loc.is_dir():
+        csv_files = loc.glob("*.csv")
+    else:
+        csv_files.append(location)
 
-    year: int
-    month: int
-    day: int
-    start: time
-    stop: time
-    note: str = ""
-
-
-def read_csv(file_name: str | Path) -> list[dict[str, Any]]:
-    """Read a CSV file at file_name and return a list of the rows."""
-    entries = []
-    with open(file_name, encoding="utf-8") as csv_file:
-        reader = csv.DictReader(csv_file)
-        for row in reader:
-            row = {key.strip(): value.strip() for key, value in row.items()}
-            entries.append(HourEntry(**row))
+    entries = pd.concat(pd.read_csv(file) for file in csv_files)
+    entries.index = range(1, len(entries) + 1)
 
     return entries
 
 
-def control_center(input_file: str) -> None:
+def control_center(location: str) -> None:
+    df_entries = read_csv(location)
+
     console = Console()
-    console.print(read_csv(file_name=input_file))
+    console.print(df_entries)
 
 
 def main() -> None:
