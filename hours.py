@@ -6,14 +6,12 @@ using CSV file(s).
 
 """
 
-import csv
 from datetime import datetime, date, time, timedelta
 from pathlib import Path
-from typing import Any
 
 import typer
 import pandas as pd
-from pydantic import BaseModel
+
 from rich.console import Console
 
 app = typer.Typer()
